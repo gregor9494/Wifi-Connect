@@ -155,6 +155,51 @@ public class WifiP2PServiceImpl implements WifiP2PService {
     }
 
     @Override
+    public synchronized void connectDevice(WifiP2pDevice wifiP2pDevice, String pass) {
+        WifiP2pConfig config = new WifiP2pConfig();
+        config.deviceAddress = wifiP2pDevice.deviceAddress;
+        config.wps.setup = WpsInfo.LABEL;
+        config.groupOwnerIntent = 15;
+        config.wps.pin = pass;
+        manager.connect(channel, config, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {}
+            @Override
+            public void onFailure(int reason) {
+                if(wifiP2PConnectionCallback != null) {
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            wifiP2PConnectionCallback.onPeerConnectionFailure();
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    @Override
+    public synchronized void connectDevice(WifiP2pDevice wifiP2pDevice, WifiP2pConfig config) {
+        config.deviceAddress = wifiP2pDevice.deviceAddress;
+        manager.connect(channel, config, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {}
+            @Override
+            public void onFailure(int reason) {
+                if(wifiP2PConnectionCallback != null) {
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            wifiP2PConnectionCallback.onPeerConnectionFailure();
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+
+    @Override
     public synchronized void disconnectDevice() {
         if(manager == null) return;
         manager.removeGroup(channel, new WifiP2pManager.ActionListener() {
